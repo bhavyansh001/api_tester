@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'optparse'
+require 'colorize'
+require_relative '../lib/api_tester'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: api-tester [options]"
+
+  opts.on("-u", "--url URL", "API URL") { |v| options[:url] = v }
+  opts.on("-m", "--method METHOD", "HTTP method") { |v| options[:method] = v.upcase }
+  opts.on("-b", "--body BODY", "Request body as JSON") { |v| options[:body] = JSON.parse(v) }
+  opts.on("-H", "--headers HEADERS", "Request headers as JSON") { |v| options[:headers] = JSON.parse(v) }
+  opts.on("-t", "--token TOKEN", "Bearer token for authorization") { |v| options[:token] = v }
+end.parse!
+
+# If no URL provided, enter interactive mode
+if options.empty?
+  puts "Welcome to the API Tester!".light_blue
+  puts "Please provide the following details:"
+
+  print "URL: ".yellow
+  options[:url] = gets.chomp
+
+  print "HTTP Method (GET, POST, PUT, DELETE): ".yellow
+  options[:method] = gets.chomp.upcase
+
+  print "Do you have a request body? (y/n): ".yellow
+  if gets.chomp.downcase == 'y'
+    print "Enter the body as JSON: ".yellow
+    options[:body] = JSON.parse(gets.chomp)
+  end
+
+  print "Do you have a Bearer Token? (y/n): ".yellow
+  if gets.chomp.downcase == 'y'
+    print "Enter the Bearer Token: ".yellow
+    options[:token] = gets.chomp
+  end
+
+  headers = { "Content-Type" => "application/json" }
+  print "Any additional headers as JSON? (y/n): ".yellow
+  if gets.chomp.downcase == 'y'
+    print "Enter headers as JSON: ".yellow
+    additional_headers = JSON.parse(gets.chomp)
+    headers.merge!(additional_headers)
+  end
+  options[:headers] = headers
+end
+
+# Create and send request using options
+request = ApiTester::Request.new
+request.set_method(options[:method])
+request.set_headers(options[:headers] || { "Content-Type" => "application/json" })
+request.set_body(options[:body]) if options[:body]
+request.set_auth_token(options[:token]) if options[:token]
+
+client = ApiTester::Client.new(options[:url], request.headers, request.method, request.body, request.token)
+
+# Display formatted request info
+puts "\nSending request to: #{options[:url]}".green
+puts "Method: #{options[:method]}".green
+puts "Headers: #{options[:headers]}".green
+puts "Body: #{options[:body].to_json}" if options[:body]
+
+# Send the request and display the response
+response = client.send_request
+response.display
