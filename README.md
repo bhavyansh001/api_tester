@@ -29,6 +29,7 @@ Or install it yourself with:
 ```bash
 gem install api_tester_cli
 ```
+Dependencies: json v2.7.1, colorize v1.1.0, teminal-table v3.0.2
 
 ##  Usage
 
