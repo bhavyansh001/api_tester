@@ -5,6 +5,27 @@ require 'optparse'
 require 'colorize'
 require_relative '../lib/api_tester'
 
+def send_request(options)
+  # Create and send request using options
+  request = ApiTester::Request.new
+  request.set_method(options[:method])
+  request.set_headers(options[:headers])
+  request.set_body(options[:body]) if options[:body]
+  request.set_auth_token(options[:token]) if options[:token]
+
+  client = ApiTester::Client.new(options[:url], request.headers, request.method, request.body, request.token)
+
+  # Display formatted request info
+  puts "\nSending request to: #{options[:url]}".green
+  puts "Method: #{options[:method]}".green
+  puts "Headers: #{options[:headers]}".green
+  puts "Body: #{options[:body].to_json}" if options[:body]
+
+  # Send the request and display the response
+  response = client.send_request
+  response.display
+end
+
 options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: api-tester [options]"
@@ -16,54 +37,58 @@ OptionParser.new do |opts|
   opts.on("-t", "--token TOKEN", "Bearer token for authorization") { |v| options[:token] = v }
 end.parse!
 
-# If no URL provided, enter interactive mode
-if options.empty?
+# If URL is provided via arguments (first case)
+if options[:url]
+  send_request(options)
+
+# If no URL provided, enter interactive mode (second case)
+else
   puts "Welcome to the API Tester!".light_blue
   puts "Please provide the following details:"
 
-  print "URL: ".yellow
-  options[:url] = gets.chomp
-
-  print "HTTP Method (GET, POST, PUT, DELETE): ".yellow
-  options[:method] = gets.chomp.upcase
-
-  print "Do you have a request body? (y/n): ".yellow
-  if gets.chomp.downcase == 'y'
-    print "Enter the body as JSON: ".yellow
-    options[:body] = JSON.parse(gets.chomp)
-  end
-
-  print "Do you have a Bearer Token? (y/n): ".yellow
-  if gets.chomp.downcase == 'y'
-    print "Enter the Bearer Token: ".yellow
-    options[:token] = gets.chomp
-  end
+  print "Base URL (e.g., https://example.com/api/v1): ".yellow
+  base_url = gets.chomp
 
   headers = { "Content-Type" => "application/json" }
-  print "Any additional headers as JSON? (y/n): ".yellow
+  print "Do you have any additional headers as JSON? (y/n): ".yellow
   if gets.chomp.downcase == 'y'
     print "Enter headers as JSON: ".yellow
     additional_headers = JSON.parse(gets.chomp)
     headers.merge!(additional_headers)
   end
   options[:headers] = headers
+
+  begin
+    loop do
+      print "Endpoint (e.g., /login): ".yellow
+      endpoint = gets.chomp
+      options[:url] = "#{base_url}#{endpoint}"
+
+      print "HTTP Method (GET, POST, PUT, DELETE): ".yellow
+      options[:method] = gets.chomp.upcase
+
+      print "Do you have a request body? (y/n): ".yellow
+      if gets.chomp.downcase == 'y'
+        print "Enter the body as JSON: ".yellow
+        options[:body] = JSON.parse(gets.chomp)
+      else
+        options[:body] = nil
+      end
+
+      print "Do you have a Bearer Token? (y/n): ".yellow
+      if gets.chomp.downcase == 'y'
+        print "Enter the Bearer Token: ".yellow
+        options[:token] = gets.chomp
+      else
+        options[:token] = nil
+      end
+
+      # Send request in loop
+      send_request(options)
+
+      puts "\nPress Ctrl+C to exit or continue with a new request.".light_blue
+    end
+  rescue Interrupt
+    puts "\nExiting API Tester. Goodbye!".red
+  end
 end
-
-# Create and send request using options
-request = ApiTester::Request.new
-request.set_method(options[:method])
-request.set_headers(options[:headers] || { "Content-Type" => "application/json" })
-request.set_body(options[:body]) if options[:body]
-request.set_auth_token(options[:token]) if options[:token]
-
-client = ApiTester::Client.new(options[:url], request.headers, request.method, request.body, request.token)
-
-# Display formatted request info
-puts "\nSending request to: #{options[:url]}".green
-puts "Method: #{options[:method]}".green
-puts "Headers: #{options[:headers]}".green
-puts "Body: #{options[:body].to_json}" if options[:body]
-
-# Send the request and display the response
-response = client.send_request
-response.display
