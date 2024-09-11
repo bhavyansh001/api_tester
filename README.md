@@ -16,7 +16,7 @@ A simple command-line tool to test REST APIs. This tool allows you to interactiv
 
 1. Clone the repository:
 	```bash
-	git clone https://github.com/yourusername/api-tester.git
+	git clone https://github.com/bhavyansh001/api-tester.git
 	```
 2. Install dependencies:
 	```bash
@@ -55,3 +55,27 @@ Options:
 
 3. Response
 The response from the server is displayed with colored status codes, headers in table format, and pretty-printed JSON body.
+
+## Configuration
+
+api_tester_cli uses sensible defaults but can be configured according to your needs:
+
+- max_pages: Controls the maximum number of requests to handle in interactive mode (default: unlimited).
+- session_cookie: For authenticated access if required.
+
+## Logging
+
+The tool provides colored logging to enhance visibility. Output includes details about the request, response status, and any errors encountered.
+
+## Best Practices
+
+Respect the API's terms of service and rate limits.
+Ensure you have permission to test authenticated endpoints.
+Use caution with sensitive information when testing.
+
+## Contributing
+
+Contributions are welcome! Report bugs and submit pull requests on GitHub at https://github.com/yourusername/api_tester_cli. Please adhere to the Contributor Covenant code of conduct.
+
+## License
+api_tester_cli is released under the MIT License. See the LICENSE file for details.
