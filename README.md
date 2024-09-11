@@ -14,25 +14,28 @@ A simple command-line tool to test REST APIs. This tool allows you to interactiv
 
 ##  Installation
 
-1. Clone the repository:
-	```bash
-	git clone https://github.com/bhavyansh001/api-tester.git
-	```
-2. Install dependencies:
-	```bash
-	bundle install
-	```
-3. Run the CLI tool:
-	```bash
-	cd api-tester
-	chmod +x bin/api-tester
-	```
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'api_tester_cli'
+```
+Then execute:
+
+```bash
+bundle install
+```
+Or install it yourself with:
+
+```bash
+gem install api_tester_cli
+```
+
 ##  Usage
 
 1. Interactive Mode
 Run the tool without any arguments, and it will prompt you for the necessary information interactively.
 	```bash
-	bin/api-tester
+	api-tester
 	```
 You will be asked to provide the following:
 - URL
@@ -44,7 +47,7 @@ You will be asked to provide the following:
 2. Command-Line Mode
 You can also provide arguments directly to make the process faster.
 	```bash
-	bin/api-tester -u https://your-api.com/login -m POST -H '{"Content-Type": "application/json"}' -b '{"email": "user@example.com", "password": "password123"}' -t  'your_bearer_token'
+	api-tester -u https://example.com/api/v1/login -m POST -H '{"Content-Type": "application/json"}' -b '{"email": "newuser@example.com", "password": "password123"}' -t  'your_bearer_token'
 	```
 Options:
 - -u, --url : The API URL.
